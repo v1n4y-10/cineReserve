@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
+
 import java.util.List;
 
 @RestController
@@ -43,7 +45,7 @@ public class BookingController {
     // Create Booking
     @PostMapping
     public ResponseEntity<BookingResponse> createBooking(
-            @RequestBody BookingRequest request,
+            @Valid @RequestBody BookingRequest request,
             Authentication authentication) {
 
         user currentUser = getCurrentUser(authentication);

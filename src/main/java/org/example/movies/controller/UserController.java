@@ -1,4 +1,3 @@
-
 package org.example.movies.controller;
 
 import org.example.movies.entity.user;
@@ -15,6 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 
 import java.util.List;
+
+import org.example.movies.dto.RegisterRequest;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/users")
@@ -67,15 +69,21 @@ public class UserController {
 
     // Register User
 
+    // Register User
     @PostMapping
-    public UserResponse addUser(@RequestBody user newUser) {
+    public UserResponse addUser(@Valid @RequestBody RegisterRequest request) {
+
+        user newUser = new user();
+
+        newUser.setName(request.getName());
+        newUser.setEmail(request.getEmail());
 
         // Every newly registered user starts as CUSTOMER
         newUser.setRole("CUSTOMER");
 
         // Hash password
         newUser.setPassword(
-                passwordEncoder.encode(newUser.getPassword())
+                passwordEncoder.encode(request.getPassword())
         );
 
         user savedUser = userRepository.save(newUser);
@@ -90,7 +98,7 @@ public class UserController {
 
     // Login User
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> loginUser(@Valid @RequestBody LoginRequest request) {
 
         user existingUser = userRepository.findByEmail(request.getEmail())
                 .orElse(null);
