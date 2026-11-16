@@ -1,19 +1,19 @@
+
 package org.example.movies.controller;
 
 import org.example.movies.dto.BookingRequest;
 import org.example.movies.dto.BookingResponse;
-import org.example.movies.entity.booking;
 import org.example.movies.entity.user;
 import org.example.movies.repository.userRepository;
-import org.example.movies.repository.bookingRepository;
 import org.example.movies.service.BookingService;
+import org.example.movies.exception.ResourceNotFoundException;
+
+import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -23,26 +23,24 @@ public class BookingController {
 
     private final BookingService bookingService;
     private final userRepository userRepository;
-    private final bookingRepository bookingRepository;
 
     public BookingController(
             BookingService bookingService,
-            userRepository userRepository,
-            bookingRepository bookingRepository) {
+            userRepository userRepository) {
 
         this.bookingService = bookingService;
         this.userRepository = userRepository;
-        this.bookingRepository = bookingRepository;
     }
 
-    // Get Logged-in User
+    // Get logged-in user using JWT email
     private user getCurrentUser(Authentication authentication) {
 
         return userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found"));
     }
 
-    // Create Booking
+    // CREATE BOOKING
     @PostMapping
     public ResponseEntity<BookingResponse> createBooking(
             @Valid @RequestBody BookingRequest request,
@@ -50,82 +48,50 @@ public class BookingController {
 
         user currentUser = getCurrentUser(authentication);
 
-        booking newBooking = bookingService.createBooking(
+        BookingResponse response = bookingService.createBooking(
                 currentUser.getId(),
                 request.getShowSeatIds()
         );
 
-        BookingResponse response = new BookingResponse(
-                newBooking.getId(),
-                currentUser.getId(),
-                newBooking.getBookingTime(),
-                newBooking.getTotalAmount(),
-                newBooking.getStatus(),
-                request.getShowSeatIds()
-        );
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // Get Own Booking History
+    // GET OWN BOOKING HISTORY
     @GetMapping("/my-bookings")
     public ResponseEntity<List<BookingResponse>> getUserBookings(
             Authentication authentication) {
 
         user currentUser = getCurrentUser(authentication);
 
-        List<booking> bookings =
+        List<BookingResponse> response =
                 bookingService.getUserBookings(currentUser.getId());
-
-        List<BookingResponse> response = bookings.stream()
-                .map(b -> new BookingResponse(
-                        b.getId(),
-                        b.getUser().getId(),
-                        b.getBookingTime(),
-                        b.getTotalAmount(),
-                        b.getStatus(),
-                        b.getBookingSeats().stream()
-                                .map(bs -> bs.getShow_seat().getId())
-                                .toList()
-                ))
-                .toList();
 
         return ResponseEntity.ok(response);
     }
 
-    // Cancel Own Booking
+    // CANCEL OWN BOOKING
     @PutMapping("/{bookingId}/cancel")
-    public ResponseEntity<?> cancelBooking(
+    public ResponseEntity<BookingResponse> cancelBooking(
             @PathVariable Long bookingId,
             Authentication authentication) {
 
         user currentUser = getCurrentUser(authentication);
 
-        booking existingBooking = bookingRepository.findById(bookingId)
-                .orElse(null);
-
-        if (existingBooking == null) {
-            return ResponseEntity.notFound().build();
+        // Check whether booking exists and belongs to current user
+        if (bookingId == null || bookingId <= 0) {
+            throw new ResourceNotFoundException("Booking not found");
         }
 
-        if (!existingBooking.getUser().getId().equals(currentUser.getId())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("You cannot cancel another user's booking");
+        boolean ownsBooking = bookingService
+                .userOwnsBooking(bookingId, currentUser.getId());
+
+        if (!ownsBooking) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "You cannot cancel another user's booking");
         }
 
-        booking cancelledBooking =
+        BookingResponse response =
                 bookingService.cancelBooking(bookingId);
-
-        BookingResponse response = new BookingResponse(
-                cancelledBooking.getId(),
-                cancelledBooking.getUser().getId(),
-                cancelledBooking.getBookingTime(),
-                cancelledBooking.getTotalAmount(),
-                cancelledBooking.getStatus(),
-                cancelledBooking.getBookingSeats().stream()
-                        .map(bs -> bs.getShow_seat().getId())
-                        .toList()
-        );
 
         return ResponseEntity.ok(response);
     }

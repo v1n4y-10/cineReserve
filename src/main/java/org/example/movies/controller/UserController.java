@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.security.core.Authentication;
+import org.example.movies.exception.EmailAlreadyExistsException;
 
 import java.util.List;
 
@@ -72,6 +73,10 @@ public class UserController {
     // Register User
     @PostMapping
     public UserResponse addUser(@Valid @RequestBody RegisterRequest request) {
+        // Check if email is already registered
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new EmailAlreadyExistsException("Email is already registered");
+        }
 
         user newUser = new user();
 
@@ -104,7 +109,7 @@ public class UserController {
                 .orElse(null);
 
         if (existingUser == null) {
-            return ResponseEntity.badRequest()
+            return ResponseEntity.status(401)
                     .body("Invalid email or password");
         }
 
@@ -114,7 +119,7 @@ public class UserController {
         );
 
         if (!passwordMatches) {
-            return ResponseEntity.badRequest()
+            return ResponseEntity.status(401)
                     .body("Invalid email or password");
         }
 
@@ -151,6 +156,14 @@ public class UserController {
         if (!currentUser.getId().equals(id)) {
             return ResponseEntity.status(403)
                     .body("You cannot update another user's profile");
+        }
+
+        // Check if the new email belongs to another user
+        user existingUser = userRepository.findByEmail(updatedUser.getEmail())
+                .orElse(null);
+
+        if (existingUser != null && !existingUser.getId().equals(id)) {
+            throw new EmailAlreadyExistsException("Email is already registered");
         }
 
         currentUser.setName(updatedUser.getName());

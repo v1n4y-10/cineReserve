@@ -88,6 +88,30 @@ public class SecurityConfig {
                         // Everything else requires authentication
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(exception -> exception
+
+                        // User is not authenticated
+                        .authenticationEntryPoint((request, response, authException) -> {
+
+                            response.setStatus(401);
+                            response.setContentType("application/json");
+
+                            response.getWriter().write(
+                                    "{\"error\":\"Authentication required or token is invalid\"}"
+                            );
+                        })
+
+                        // User is authenticated but lacks permission
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+
+                            response.setStatus(403);
+                            response.setContentType("application/json");
+
+                            response.getWriter().write(
+                                    "{\"error\":\"You do not have permission to access this resource\"}"
+                            );
+                        })
+                )
 
                 .addFilterBefore(
                         jwtAuthenticationFilter,
