@@ -1,30 +1,38 @@
+
 package org.example.movies.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
+@Table(name = "movie")
 public class movie {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
+
+    @Column(nullable = false, length = 150)
     private String title;
+
+    @Column(length = 50)
     private String genre;
+
+    @Column(length = 50)
     private String language;
+
+    @Column(nullable = false)
     private Integer duration;
 
-    public movie(){}
+    public movie() {
+    }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
-
 
     public String getTitle() {
         return title;
@@ -34,12 +42,20 @@ public class movie {
         this.title = title;
     }
 
-    public void setLanguage(String language) {
-        this.language = language;
+    public String getGenre() {
+        return genre;
+    }
+
+    public void setGenre(String genre) {
+        this.genre = genre;
     }
 
     public String getLanguage() {
         return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
     }
 
     public Integer getDuration() {
@@ -48,13 +64,5 @@ public class movie {
 
     public void setDuration(Integer duration) {
         this.duration = duration;
-    }
-
-    public String getGenre() {
-        return genre;
-    }
-
-    public void setGenre(String genre) {
-        this.genre = genre;
     }
 }

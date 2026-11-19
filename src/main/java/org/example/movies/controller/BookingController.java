@@ -77,21 +77,10 @@ public class BookingController {
 
         user currentUser = getCurrentUser(authentication);
 
-        // Check whether booking exists and belongs to current user
-        if (bookingId == null || bookingId <= 0) {
-            throw new ResourceNotFoundException("Booking not found");
-        }
-
-        boolean ownsBooking = bookingService
-                .userOwnsBooking(bookingId, currentUser.getId());
-
-        if (!ownsBooking) {
-            throw new org.springframework.security.access.AccessDeniedException(
-                    "You cannot cancel another user's booking");
-        }
-
-        BookingResponse response =
-                bookingService.cancelBooking(bookingId);
+        BookingResponse response = bookingService.cancelBooking(
+                bookingId,
+                currentUser.getId()
+        );
 
         return ResponseEntity.ok(response);
     }

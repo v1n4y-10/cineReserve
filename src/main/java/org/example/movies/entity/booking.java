@@ -2,6 +2,7 @@
 package org.example.movies.entity;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import java.util.List;
@@ -15,17 +16,20 @@ public class booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private user user;
 
-    @OneToMany(mappedBy = "booking")
+    @OneToMany(mappedBy = "booking", fetch = FetchType.LAZY)
     private List<booking_seat> bookingSeats = new ArrayList<>();
 
+    @Column(nullable = false)
     private LocalDateTime bookingTime;
 
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
+    @Column(nullable = false, length = 20)
     private String status;
 
     public booking() {

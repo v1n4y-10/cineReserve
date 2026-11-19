@@ -7,7 +7,9 @@ import jakarta.persistence.*;
 @Table(
         name = "seat",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"screen_id", "seatNumber"})
+                @UniqueConstraint(
+                        columnNames = {"screen_id", "seatNumber"}
+                )
         }
 )
 public class seat {
@@ -16,10 +18,13 @@ public class seat {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 10)
     private String seatNumber;
+
+    @Column(nullable = false, length = 30)
     private String seatType;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "screen_id", nullable = false)
     private screen screen;
 

@@ -4,14 +4,15 @@ package org.example.movies.service;
 import org.example.movies.entity.*;
 import org.example.movies.repository.*;
 import org.example.movies.exception.ResourceNotFoundException;
+import org.example.movies.dto.BookingResponse;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
-import org.example.movies.dto.BookingResponse;
 
 @Service
 public class BookingService {
@@ -35,33 +36,29 @@ public class BookingService {
 
     // CREATE BOOKING
     @Transactional
-    public booking createBooking(Long userId, List<Long> showSeatIds) {
+    public BookingResponse createBooking(Long userId, List<Long> showSeatIds) {
 
-        // Validate user ID
         if (userId == null || userId <= 0) {
             throw new ResourceNotFoundException("User not found");
         }
 
-        // Find user
         user customer = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found"));
 
-        // Validate selected seats
         if (showSeatIds == null || showSeatIds.isEmpty()) {
             throw new RuntimeException("Please select at least one seat");
         }
 
-        // Maximum 10 seats per booking
         if (showSeatIds.size() > 10) {
-            throw new RuntimeException("You can book a maximum of 10 seats at once");
+            throw new RuntimeException(
+                    "You can book a maximum of 10 seats at once");
         }
 
-        // Check for null or invalid seat IDs
         if (showSeatIds.stream().anyMatch(id -> id == null || id <= 0)) {
             throw new RuntimeException("Invalid seat ID");
         }
 
-        // Prevent duplicate seat selection
         if (new HashSet<>(showSeatIds).size() != showSeatIds.size()) {
             throw new RuntimeException("Duplicate seat IDs are not allowed");
         }
@@ -78,9 +75,9 @@ public class BookingService {
             show_seat selectedSeat = show_seatRepository
                     .findByIdForUpdate(id)
                     .orElseThrow(() ->
-                            new ResourceNotFoundException("Show seat not found: " + id));
+                            new ResourceNotFoundException(
+                                    "Show seat not found: " + id));
 
-            // Check availability
             if (!"AVAILABLE".equals(selectedSeat.getStatus())) {
                 throw new RuntimeException("Seat is not available: " + id);
             }
@@ -99,14 +96,15 @@ public class BookingService {
             }
         }
 
-        // Calculate total booking amount
+        // Calculate total amount
         BigDecimal totalAmount = BigDecimal.ZERO;
 
         for (show_seat selectedSeat : selectedSeats) {
 
             BigDecimal ticketPrice = selectedSeat.getShow().getTicketPrice();
 
-            if (ticketPrice == null || ticketPrice.compareTo(BigDecimal.ZERO) < 0) {
+            if (ticketPrice == null ||
+                    ticketPrice.compareTo(BigDecimal.ZERO) < 0) {
                 throw new RuntimeException("Invalid ticket price");
             }
 
@@ -138,7 +136,6 @@ public class BookingService {
             bookingSeats.add(bookingSeat);
         }
 
-        // Save all changes within the same transaction
         show_seatRepository.saveAll(selectedSeats);
         booking_seatRepository.saveAll(bookingSeats);
 
@@ -160,6 +157,10 @@ public class BookingService {
     @Transactional(readOnly = true)
     public List<BookingResponse> getUserBookings(Long userId) {
 
+        if (userId == null || userId <= 0) {
+            throw new ResourceNotFoundException("User not found");
+        }
+
         user customer = userRepository.findById(userId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("User not found"));
@@ -180,28 +181,30 @@ public class BookingService {
                 ))
                 .toList();
     }
-    @Transactional(readOnly = true)
-    public boolean userOwnsBooking(Long bookingId, Long userId) {
-
-        booking existingBooking = bookingRepository.findById(bookingId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Booking not found"));
-
-        return existingBooking.getUser().getId().equals(userId);
-    }
 
     // CANCEL BOOKING
     @Transactional
-    public BookingResponse cancelBooking(Long bookingId) {
+    public BookingResponse cancelBooking(Long bookingId, Long userId) {
 
         if (bookingId == null || bookingId <= 0) {
             throw new ResourceNotFoundException("Booking not found");
         }
 
-        // Lock booking to prevent simultaneous cancellation
-        booking existingBooking = bookingRepository.findByIdForUpdate(bookingId)
+        if (userId == null || userId <= 0) {
+            throw new ResourceNotFoundException("User not found");
+        }
+
+        // Lock booking
+        booking existingBooking = bookingRepository
+                .findByIdForUpdate(bookingId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Booking not found"));
+
+        // Check ownership inside the same transaction
+        if (!existingBooking.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException(
+                    "You cannot cancel another user's booking");
+        }
 
         // Only confirmed bookings can be cancelled
         if (!"CONFIRMED".equals(existingBooking.getStatus())) {
@@ -213,7 +216,6 @@ public class BookingService {
         List<Long> seatIds = new ArrayList<>();
 
         for (booking_seat bookingSeat : existingBooking.getBookingSeats()) {
-
             seatIds.add(bookingSeat.getShow_seat().getId());
         }
 
@@ -232,9 +234,9 @@ public class BookingService {
             show_seat selectedSeat = show_seatRepository
                     .findByIdForUpdate(id)
                     .orElseThrow(() ->
-                            new ResourceNotFoundException("Show seat not found: " + id));
+                            new ResourceNotFoundException(
+                                    "Show seat not found: " + id));
 
-            // Verify that the seat is currently booked
             if (!"BOOKED".equals(selectedSeat.getStatus())) {
                 throw new RuntimeException(
                         "Seat is not currently booked: " + id);
@@ -264,5 +266,4 @@ public class BookingService {
                 seatIds
         );
     }
-
 }

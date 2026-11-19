@@ -1,26 +1,27 @@
+
 package org.example.movies.entity;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.JoinColumn;
+import jakarta.persistence.*;
 
 @Entity
+@Table(name = "screen")
 public class screen {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-    @ManyToOne
-    @JoinColumn(name = "theater_id")
+    private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "theater_id", nullable = false)
     private theater theater;
 
-
+    @Column(nullable = false, length = 100)
     private String name;
+
+    @Column(nullable = false)
     private Integer totalSeats;
+
+    @Column(length = 50)
     private String screenType;
 
     public screen() {
@@ -65,5 +66,4 @@ public class screen {
     public void setTheater(theater theater) {
         this.theater = theater;
     }
-
 }

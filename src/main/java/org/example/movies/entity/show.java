@@ -1,6 +1,8 @@
+
 package org.example.movies.entity;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
 
@@ -12,16 +14,18 @@ public class show {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "movie_id", nullable = false)
     private movie movie;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "screen_id", nullable = false)
     private screen screen;
 
+    @Column(nullable = false)
     private LocalDateTime startTime;
 
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal ticketPrice;
 
     public show() {

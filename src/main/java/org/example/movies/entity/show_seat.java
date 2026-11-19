@@ -1,26 +1,32 @@
+
 package org.example.movies.entity;
+
 import jakarta.persistence.*;
 
 @Entity
 @Table(
         name = "show_seat",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames =  {"show_id", "seat_id"})
+                @UniqueConstraint(
+                        columnNames = {"show_id", "seat_id"}
+                )
         }
 )
 public class show_seat {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "show_id", nullable = false)
     private show show;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seat_id", nullable = false)
     private seat seat;
 
+    @Column(nullable = false, length = 20)
     private String status;
 
     public show_seat() {
@@ -57,5 +63,4 @@ public class show_seat {
     public void setStatus(String status) {
         this.status = status;
     }
-
 }

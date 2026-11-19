@@ -7,7 +7,9 @@ import jakarta.persistence.*;
 @Table(
         name = "booking_seat",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"booking_id", "show_seat_id"})
+                @UniqueConstraint(
+                        columnNames = {"booking_id", "show_seat_id"}
+                )
         }
 )
 public class booking_seat {
@@ -16,11 +18,11 @@ public class booking_seat {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booking_id", nullable = false)
     private booking booking;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "show_seat_id", nullable = false)
     private show_seat show_seat;
 

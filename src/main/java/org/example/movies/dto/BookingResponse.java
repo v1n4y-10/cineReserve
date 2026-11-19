@@ -1,3 +1,4 @@
+
 package org.example.movies.dto;
 
 import java.math.BigDecimal;
@@ -6,12 +7,12 @@ import java.util.List;
 
 public class BookingResponse {
 
-    private Long bookingId;
-    private Long userId;
-    private LocalDateTime bookingTime;
-    private BigDecimal totalAmount;
-    private String status;
-    private List<Long> showSeatIds;
+    private final Long bookingId;
+    private final Long userId;
+    private final LocalDateTime bookingTime;
+    private final BigDecimal totalAmount;
+    private final String status;
+    private final List<Long> showSeatIds;
 
     public BookingResponse(
             Long bookingId,
@@ -26,8 +27,9 @@ public class BookingResponse {
         this.bookingTime = bookingTime;
         this.totalAmount = totalAmount;
         this.status = status;
-        this.showSeatIds = showSeatIds;
+        this.showSeatIds = List.copyOf(showSeatIds);
     }
+
     public Long getBookingId() {
         return bookingId;
     }
@@ -51,5 +53,4 @@ public class BookingResponse {
     public List<Long> getShowSeatIds() {
         return showSeatIds;
     }
-
 }

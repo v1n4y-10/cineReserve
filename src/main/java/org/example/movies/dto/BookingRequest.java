@@ -1,3 +1,4 @@
+
 package org.example.movies.dto;
 
 import jakarta.validation.constraints.NotEmpty;

@@ -6,6 +6,7 @@ import org.example.movies.dto.UserResponse;
 import org.example.movies.dto.LoginRequest;
 import org.example.movies.dto.LoginResponse;
 import org.example.movies.config.JwtService;
+import org.example.movies.dto.UpdateUserRequest;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.http.ResponseEntity;
@@ -138,13 +139,13 @@ public class UserController {
 
     // Update User
 
+
     @PutMapping("/{id}")
     public ResponseEntity<?> updateUser(
             @PathVariable Long id,
-            @RequestBody user updatedUser,
+            @Valid @RequestBody UpdateUserRequest request,
             Authentication authentication) {
 
-        // Identify logged-in user
         user currentUser = userRepository.findByEmail(authentication.getName())
                 .orElse(null);
 
@@ -152,29 +153,29 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
 
-        // Prevent updating another user's account
+        // Only allow users to update their own profile
         if (!currentUser.getId().equals(id)) {
             return ResponseEntity.status(403)
                     .body("You cannot update another user's profile");
         }
 
-        // Check if the new email belongs to another user
-        user existingUser = userRepository.findByEmail(updatedUser.getEmail())
+        // Check whether email is already used
+        user existingUser = userRepository.findByEmail(request.getEmail())
                 .orElse(null);
 
         if (existingUser != null && !existingUser.getId().equals(id)) {
             throw new EmailAlreadyExistsException("Email is already registered");
         }
 
-        currentUser.setName(updatedUser.getName());
-        currentUser.setEmail(updatedUser.getEmail());
+        currentUser.setName(request.getName());
+        currentUser.setEmail(request.getEmail());
 
-        // Update password only when provided
-        if (updatedUser.getPassword() != null &&
-                !updatedUser.getPassword().isBlank()) {
+        // Update password only if provided
+        if (request.getPassword() != null &&
+                !request.getPassword().isBlank()) {
 
             currentUser.setPassword(
-                    passwordEncoder.encode(updatedUser.getPassword())
+                    passwordEncoder.encode(request.getPassword())
             );
         }
 
