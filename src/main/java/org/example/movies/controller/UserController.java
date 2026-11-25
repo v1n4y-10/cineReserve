@@ -138,8 +138,6 @@ public class UserController {
     }
 
     // Update User
-
-
     @PutMapping("/{id}")
     public ResponseEntity<?> updateUser(
             @PathVariable Long id,

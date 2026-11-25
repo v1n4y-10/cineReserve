@@ -50,6 +50,7 @@ public class SecurityConfig {
                                 "/api/users",
                                 "/api/users/login"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/", "/index.html", "/css/**", "/js/**").permitAll()
 
                         // User profile updates require authentication
                         .requestMatchers(

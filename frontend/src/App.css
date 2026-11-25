@@ -1,0 +1,170 @@
+
+.app {
+  min-height: 100vh;
+  background:
+          radial-gradient(ellipse at 75% 40%, #421b2b 0%, transparent 45%),
+          #09090d;
+}
+
+/* NAVBAR */
+
+.navbar {
+  height: 85px;
+  padding: 0 8%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #ffffff12;
+}
+
+.logo {
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.logo span {
+  color: #ff375f;
+}
+
+.nav-links {
+  display: flex;
+  gap: 38px;
+  color: #aaa;
+  font-size: 14px;
+}
+
+.nav-links a:hover {
+  color: white;
+}
+
+.nav-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.nav-actions button,
+.explore-btn {
+  padding: 12px 23px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.login-btn {
+  background: transparent;
+  border: 1px solid #444;
+  color: white;
+}
+
+.register-btn,
+.explore-btn {
+  background: #ff375f;
+  color: white;
+  border: none;
+}
+
+/* HERO SECTION */
+
+.hero {
+  min-height: calc(100vh - 85px);
+  display: flex;
+  align-items: center;
+  padding: 0 10%;
+}
+
+.hero-content {
+  max-width: 650px;
+}
+
+.hero-tag {
+  color: #ff5274;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  margin-bottom: 25px;
+}
+
+.hero h2 {
+  font-size: clamp(45px, 6vw, 76px);
+  line-height: 1.12;
+  letter-spacing: -3px;
+  font-weight: 800;
+}
+
+.hero h2 span {
+  color: #ff375f;
+}
+
+.hero-description {
+  color: #aaa;
+  font-size: 16px;
+  line-height: 1.8;
+  max-width: 480px;
+  margin: 25px 0 32px;
+}
+
+.explore-btn {
+  font-size: 14px;
+  padding: 16px 27px;
+}
+
+.explore-btn:hover,
+.register-btn:hover {
+  background: #e92750;
+}
+
+/* MOVIES SECTION */
+
+.movies-section {
+  padding: 80px 8%;
+  background: #0d0d13;
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  margin-bottom: 35px;
+}
+
+.section-heading h2 {
+  font-size: 32px;
+}
+
+.section-heading > span {
+  color: #ff5274;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.movies-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .movies-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 550px) {
+  .movies-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .navbar {
+    padding: 0 5%;
+  }
+
+  .hero {
+    padding: 60px 7%;
+  }
+}
+
